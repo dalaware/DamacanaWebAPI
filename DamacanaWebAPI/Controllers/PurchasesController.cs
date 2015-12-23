@@ -36,41 +36,6 @@ namespace DamacanaWebAPI.Controllers
             return Ok(purchase);
         }
 
-        // PUT: api/Purchases/5
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutPurchase(int id, Purchase purchase)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != purchase.Id)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(purchase).State = EntityState.Modified;
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PurchaseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
-        }
-
         // POST: api/Purchases
         [ResponseType(typeof(Purchase))]
         public async Task<IHttpActionResult> PostPurchase(Purchase purchase)
@@ -81,25 +46,24 @@ namespace DamacanaWebAPI.Controllers
             }
 
             db.Purchases.Add(purchase);
-            await db.SaveChangesAsync();
+
+                        try
+             {
+                 await db.SaveChangesAsync();
+             }
+             catch (DbUpdateException)
+             {
+                 if (PurchaseExists(purchase.Id))
+                 {
+                     return Conflict();
+                 }
+                 else
+                 {
+                     throw;
+                 }
+             }
 
             return CreatedAtRoute("DefaultApi", new { id = purchase.Id }, purchase);
-        }
-
-        // DELETE: api/Purchases/5
-        [ResponseType(typeof(Purchase))]
-        public async Task<IHttpActionResult> DeletePurchase(int id)
-        {
-            Purchase purchase = await db.Purchases.FindAsync(id);
-            if (purchase == null)
-            {
-                return NotFound();
-            }
-
-            db.Purchases.Remove(purchase);
-            await db.SaveChangesAsync();
-
-            return Ok(purchase);
         }
 
         protected override void Dispose(bool disposing)

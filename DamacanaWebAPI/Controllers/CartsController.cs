@@ -81,10 +81,45 @@ namespace DamacanaWebAPI.Controllers
             }
 
             db.Carts.Add(cart);
+
+            /*
+                        try
+             {
+                 await db.SaveChangesAsync();
+             }
+             catch (DbUpdateException)
+             {
+                 if (CartExists(cart.Id))
+                 {
+                     return Conflict();
+                 }
+                 else
+                 {
+                     throw;
+                 }
+             }
+            */
             await db.SaveChangesAsync();
+
 
             return CreatedAtRoute("DefaultApi", new { id = cart.Id }, cart);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        private bool CartExists(int id)
+        {
+            return db.Carts.Count(e => e.Id == id) > 0;
+        }
+
+        //Enough Line -----------------------
 
         // DELETE: api/Carts/5
         [ResponseType(typeof(Cart))]
@@ -102,18 +137,6 @@ namespace DamacanaWebAPI.Controllers
             return Ok(cart);
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool CartExists(int id)
-        {
-            return db.Carts.Count(e => e.Id == id) > 0;
-        }
     }
 }
